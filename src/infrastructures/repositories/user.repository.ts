@@ -1,41 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserM } from 'src/domains/model/user';
 import { UserRepository } from 'src/domains/repositories/user.repository';
-import { CreateUserDto } from 'src/presentations/user/dto/create-user.dto';
-import { Repository } from 'typeorm';
-import { User } from '../entities/user.entity';
+import { PrismaService } from '../config/database/prisma.service';
+import { Prisma, User } from '@prisma/client';
 
 @Injectable()
 export class UserRepositoryOrm implements UserRepository {
-  constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
-  ) {}
+  constructor(private readonly userRepository: PrismaService) {}
 
-  async getAllUsers(): Promise<UserM[]> {
-    const users = await this.userRepository.find();
-    return users.map((user) => this.toUser(user));
+  async getAllUsers(): Promise<User[]> {
+    const users = await this.userRepository.user.findMany();
+    return users;
   }
 
-  async createUser(createUserDto: CreateUserDto): Promise<UserM> {
-    const user = new User();
-    user.email = createUserDto.email;
-    user.name = createUserDto.name;
-    user.password = createUserDto.password;
-    return this.userRepository.save(user);
-  }
-
-  private toUser(userEntity: User): UserM {
-    const user: UserM = new UserM();
-
-    user.id = userEntity.id;
-    user.email = userEntity.email;
-    user.name = userEntity.name;
-    user.password = userEntity.password;
-    user.created_at = userEntity.created_at;
-    user.updated_at = userEntity.updated_at;
-
+  async createUser(data: Prisma.UserCreateInput): Promise<User> {
+    const user = await this.userRepository.user.create({ data });
     return user;
   }
 }

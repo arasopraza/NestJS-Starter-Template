@@ -1,8 +1,6 @@
 export class UserM {
   id: number;
-  email: string;
   name: string;
+  email: string;
   password: string;
-  created_at: Date;
-  updated_at: Date;
 }
